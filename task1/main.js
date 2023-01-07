@@ -1,42 +1,24 @@
 // alert('js loaded!')
 // this is a basic structure for evaluation of a single choice exercise
-// INTENTIONALLY parts of the code have been deleted. 
+// INTENTIONALLY parts of the code have been deleted.
 //  It should serve as a hint towards finding a suitable solution for single choice exercise
 // Written by GSoosalu ndr3svt
+import Board from "./src/components/BoardUI.js";
+import GoogleApiQuestionFetcher from "./src/GoogleApiQuestionFetcher.js";
 
-let options = ['this','this not', 'this either']
-let states = [false,false,false]
-let correct_answer_index= 0
+function handleClientLoad(googleApi) {
+  let questionFetcher = new GoogleApiQuestionFetcher(googleApi);
+  questionFetcher.fetchQuestions().then((questions) => {
+    
+		// After loading the question we can remove the loader from the DOM
+    const loaderDiv = document.getElementById("loader");
+    loaderDiv.remove();
 
-document.addEventListener('DOMContentLoaded', init)
-
-function init(){
-	let optionsContainer=document.querySelector('#options-wrapper')
-	for(let i = 0; i< options.length; i++){
-		optionsContainer.innerHTML+= "<div class='unchosen option'><p class='text'>"+options[i]+"</p></div>"
-	}
-	// ...
+		// Show the app element
+		new Board(questions);
+    const appDiv = document.getElementById("app");
+    appDiv.style.display = "block";
+  });
 }
 
-function toggleChoice(i){
-	states[i]=true
-	// ...
-}
-
-
-
-function myEvaluation(){
-	let evMessage = document.querySelector('#evaluation-message')
-	for(let i = 0; i<options.length; i++){
-		if(states[i] && i == correct_answer_index){
-			evMessage.innerHTML = '<p>Awesome!</p>'
-			// console.log('awesome')
-			break
-		}
-		else{
-			evMessage.innerHTML = '<p>Keep trying!</p>'
-			// console.log('tryAgain')
-			break
-		}
-	}
-}
+window.handleClientLoad = handleClientLoad;

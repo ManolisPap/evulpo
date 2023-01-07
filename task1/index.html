@@ -1,19 +1,65 @@
-<!doctype html>
-<html>
-<head>
-<title>Evulpo Exercise Test</title>
-<meta name="description" content="exercise test full stack developer interview">
-<meta name="keywords" content="single-choice exercise basic-data-connection">
-<script src="main.js" type="text/javascript"></script>
-<link href="style.css" rel="stylesheet" type="text/css"/>
-</head>
-<body>
-	<p class="question"> Which is the correct option?</p>
-	<div id="options-wrapper">
-		
-	</div>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Evulpo Exercise Test</title>
+    <meta
+      name="description"
+      content="exercise test full stack developer interview"
+    />
+    <meta
+      name="keywords"
+      content="single-choice exercise basic-data-connection"
+    />
+    <script src="main.js" type="module" defer></script>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <div id="loader">
+      <img src="./assets/loading.gif" alt="" />
+    </div>
 
-	<button onclick="myEvaluation()">Evaluate!</button>
-	<div id="evaluation-message"></div>
-</body>
+    <div id="app" style="display: none">
+      <!-- The total score -->
+      <div id="score-container">Score: 0</div>
+
+      <!-- Populate with js depending of the number of the questions that we retrieve from Google Sheet API -->
+      <div id="questions-numbering-container"></div>
+
+      <!-- The topic & score for the current question -->
+      <p id="topic"></p>
+
+      <!-- The question itself -->
+      <p id="question"></p>
+
+      <!-- Populate with js depending of the number of the options for the current question -->
+      <div id="options-wrapper"></div>
+
+      <!-- Control Buttons: 
+				1. 'Evaluate' button to evaluate if the correctness of the user answer  
+				2. 'Next' button to move on the next question
+			-->
+      <div id="control-buttons-container">
+        <button id="evaluation-button" class="button">
+          Evaluate Answer
+        </button>
+        <button
+          onclick="console.log('next');"
+          id="next-question-button"
+          disabled
+          class="button disabled-button"
+        >
+          Next Question
+        </button>
+      </div>
+
+      <!-- The evaluation message depending on the user selection correct/wrong etc ... -->
+      <div id="evaluation-message"></div>
+    </div>
+
+    <script
+      defer
+      src="https://apis.google.com/js/api.js"
+      onload="handleClientLoad(gapi)"
+    ></script>
+  </body>
 </html>
