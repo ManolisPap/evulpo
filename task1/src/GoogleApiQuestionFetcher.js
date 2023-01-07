@@ -6,36 +6,36 @@ const DISCOVERY_DOCS = [
 ];
 
 class GoogleApiQuestionFetcher {
+  #googleApi;
+  #resolve;
+
   constructor(googleApi) {
-    this.googleApi = googleApi;
-    this.resolve = undefined;
+    this.#googleApi = googleApi;
+    this.#resolve = undefined;
   }
 
   fetchQuestions = (resolve, reject) => {
     return new Promise((resolve, reject) => {
-      this.googleApi.load("client", this.#initClient);
-      this.resolve = resolve;
+      this.#googleApi.load("client", this.#initClient);
+      // store the resolver function, and call it when we have the response/questions from the google sheet API
+      this.#resolve = resolve;
     });
   };
 
   #initClient = () => {
-    this.googleApi.client
+    this.#googleApi.client
       .init({
         apiKey: API_KEY,
         discoveryDocs: DISCOVERY_DOCS,
       })
       .then(
-        function () {
-          this.#getExerciseData();
-        }.bind(this),
-        function (error) {
-          console.log(JSON.stringify(error, null, 2));
-        }
+        () => this.#getExerciseData(),
+        (error) => console.log(JSON.stringify(error, null, 2))
       );
   };
 
   #getExerciseData = () => {
-    this.googleApi.client.sheets.spreadsheets.values
+    this.#googleApi.client.sheets.spreadsheets.values
       .get({
         spreadsheetId: "1hzA42BEzt2lPvOAePP6RLLRZKggbg0RWuxSaEwd5xLc",
         range: "Learning!A1:F10",
@@ -45,7 +45,7 @@ class GoogleApiQuestionFetcher {
           // console.log(response);
           console.log(response.result.values);
           const questions = this.#convertResponseToQuestionsArray(response);
-          this.resolve(questions);
+          this.#resolve(questions);
         },
         () => {
           alert("Error: " + response.result.error.message);
@@ -56,8 +56,8 @@ class GoogleApiQuestionFetcher {
 
   #convertResponseToQuestionsArray(response) {
     const questions = response.result.values.map((question, index) => {
+      // skip header
       if (index == 0) {
-        // skip header
         return null;
       }
 
@@ -70,7 +70,7 @@ class GoogleApiQuestionFetcher {
         parseFloat(question[5])
       );
     });
-    questions.shift(); // remove null (from header return)
+    questions.shift(); // remove null (related to header return)
     console.log(questions);
     return questions;
   }

@@ -1,39 +1,58 @@
+import Question from "../Question.js";
 import QuestionBoard from "./QuestionUI.js";
 
 class Board {
+  /**
+   *
+   * @param {Question[]} questions
+   */
   constructor(questions) {
     this.questions = questions;
     this.questionsStatus = []; // stores true or false depending if a question was answered correct or wrong by the user
     this.currentQuestion = 0;
     this.score = 0;
+    this.questionBoard = null;
 
+    // Select and Store HTML Elements/Nodes
     this.questionNumberingContainerElem = document.getElementById(
       "questions-numbering-container"
     );
     this.scoreContainerElem = document.getElementById("score-container");
     this.nextQuestionBtnElem = document.getElementById("next-question-button");
     this.evalMsgElem = document.getElementById("evaluation-message");
-
-    this.renderQuestionPagination(this.questions.length, this.currentQuestion);
-    this.initQuestionBoard();
   }
 
-  renderQuestionPagination(number, currentQuestion) {
+  render() {
+    this.#renderQuestionPagination();
+    this.#initQuestionBoard();
+    this.#renderCurrentQuestion();
+    this.#attachNextButtonHandler();
+  }
+
+  /**
+   * Renders the question pagination, indicating the current question, the wrong and correct answers
+   */
+  #renderQuestionPagination() {
     this.questionNumberingContainerElem.innerHTML = "";
-    for (let i = 0; i < number; i++) {
-      const activeClass = i == currentQuestion ? "active" : "";
-      const correctClass = this.questionsStatus[i] == true ? "correct" : "";
+    this.questions.forEach((question, i) => {
+      // mark the current question
+      const activeClass = i == this.currentQuestion ? "active" : "";
+
+      // indicate if a questions was answered correct or wrong by the user
+      const correctClass = this.questionsStatus[i] ? "correct" : "";
       const wrongClass = this.questionsStatus[i] == false ? "wrong" : "";
 
-      this.questionNumberingContainerElem.innerHTML += `<div class="inner-div ${activeClass} ${correctClass} ${wrongClass}">
-				${i + 1}
-			</div>`;
-    }
+      this.questionNumberingContainerElem.innerHTML += `<div class="question-number ${activeClass} ${correctClass} ${wrongClass}">
+			${i + 1}
+		</div>`;
+    });
   }
 
-  initQuestionBoard() {
-    const question = this.questions[this.currentQuestion];
-    const questionBoard = new QuestionBoard(
+  /**
+   * Initialize the QuestionBoard and render the first question
+   */
+  #initQuestionBoard() {
+    this.questionBoard = new QuestionBoard(
       () => {
         this.questionsStatus.push(true);
         this.score += this.questions[this.currentQuestion].score;
@@ -43,25 +62,41 @@ class Board {
         this.questionsStatus.push(false);
       }
     );
-    questionBoard.renderQuestion(question);
+  }
 
+  /**
+   * Renders the current question
+   */
+  #renderCurrentQuestion() {
+    const question = this.questions[this.currentQuestion];
+    this.questionBoard.renderQuestion(question);
+  }
+
+  /**
+   * Attach the click handler for the next button.
+   */
+  #attachNextButtonHandler() {
     this.nextQuestionBtnElem.addEventListener("click", () => {
-      this.nextQuestionBtnElem.disabled = true;
-      this.nextQuestionBtnElem.classList.add("disabled-button");
+      this.#disableNextButton();
 
-      if (this.currentQuestion < this.questions.length - 1) {
+      if (this.#hasMoreQuestions()) {
         this.currentQuestion++;
-        const question = this.questions[this.currentQuestion];
-        questionBoard.renderQuestion(question);
+        this.#renderCurrentQuestion();
       } else {
         this.evalMsgElem.innerHTML = "";
-        alert("End of quiz");
+        alert(`End of the Quiz. Your total score is: ${this.score}`);
       }
-      this.renderQuestionPagination(
-        this.questions.length,
-        this.currentQuestion
-      );
+      this.#renderQuestionPagination();
     });
+  }
+
+  #disableNextButton() {
+    this.nextQuestionBtnElem.disabled = true;
+    this.nextQuestionBtnElem.classList.add("disabled-button");
+  }
+
+  #hasMoreQuestions() {
+    return this.currentQuestion < this.questions.length - 1;
   }
 }
 
