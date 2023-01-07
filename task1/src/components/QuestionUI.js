@@ -1,34 +1,17 @@
 import Question from "../Question.js";
 
-const NO_OPTION_SELECTED = -1;
-
 class QuestionBoard {
   /**
    *
-   * @param {callback} onCorrectSelection
-   * @param {callback} onWrongSelection
+   * @param {callback} onOptionSelection
    */
-  constructor(onCorrectSelection, onWrongSelection) {
-    this.onCorrectSelection = onCorrectSelection;
-    this.onWrongSelection = onWrongSelection;
+  constructor(onOptionSelection) {
+    this.onOptionSelection = onOptionSelection;
 
     // Select and Store HTML Elements/Nodes
     this.topicElem = document.getElementById("topic");
     this.questionElem = document.getElementById("question");
-
     this.optionsContainerElem = document.getElementById("options-wrapper");
-
-    this.evalBtnElem = document.getElementById("evaluation-button");
-    this.nextQuestionBtnElem = document.getElementById("next-question-button");
-    this.evalMsgElem = document.getElementById("evaluation-message");
-
-    // specific for each question. renderQuestion() need to re-initialize it.
-    this.answerOptions = null;
-    this.answerIndex = null;
-    this.selectedAnswerIndex = null;
-    this.answer = null;
-
-    this.evalBtnElem.addEventListener("click", this.#myEvaluation);
   }
 
   /**
@@ -40,32 +23,29 @@ class QuestionBoard {
   }
 
   /**
+   * Renders the Topic, the Score of the question. Render the question itself and its options.
+   * And attach click handler for the options.
+   *
    * @param {Question} questionObj, The question object that holds all the information for the question, like Topic, Score, Options, etc.
    */
   renderQuestion(questionObj) {
-    this.answerOptions = questionObj.answerOptions;
-    this.answerIndex = questionObj.answerIndex;
-    this.selectedAnswerIndex = NO_OPTION_SELECTED;
-    this.answer = this.answerOptions[this.answerIndex];
+    const { question, topic, score, answerOptions } = questionObj;
 
-    this.evalMsgElem.innerHTML =
-      "<p>Select an option and evaluate your answer!!<p>";
+    this.answerOptions = answerOptions;
+    this.questionElem.innerHTML = question;
+    this.topicElem.innerHTML = `Topic: ${topic}, Score: ${score}`;
 
-    this.#enableEvalButton();
-
-    this.questionElem.innerHTML = questionObj.question;
-    this.topicElem.innerHTML = `Topic: ${questionObj.topic}, Score: ${questionObj.score}`;
-
-    this.optionsContainerElem.innerHTML = ""; // reset previous question options
-
+    let answerOptionsHTML = "";
     // render answer options
     this.answerOptions.forEach((answerOption, i) => {
-      this.optionsContainerElem.innerHTML += `<div class='unchosen option' id='option-${i}'>
+      answerOptionsHTML += `<div class='unchosen option' id='option-${i}'>
 			<span class='text'>${answerOption}</span>
 		</div>`;
     });
 
-    // attach click handlers on question options
+    this.optionsContainerElem.innerHTML = answerOptionsHTML;
+
+    // attach click handler on question options
     const answerOptionElems = document.querySelectorAll(".option");
     answerOptionElems.forEach((element, index) =>
       element.addEventListener("click", () => {
@@ -80,13 +60,13 @@ class QuestionBoard {
    * @param {number} choiceNum
    */
   #toggleChoice(choiceNum) {
-    this.selectedAnswerIndex = choiceNum;
+    this.onOptionSelection(choiceNum);
 
     // remove styling from previously selected answers
-    for (let i = 0; i < this.answerOptions.length; i++) {
-      const div = this.#getOptionElem(i);
-      div.classList.remove("selected-option");
-    }
+    this.answerOptions.forEach((answerOption, i) => {
+      const optionElem = this.#getOptionElem(i);
+      optionElem.classList.remove("selected-option");
+    });
 
     // set styling for the new selected option
     const selectedOptionElem = this.#getOptionElem(choiceNum);
@@ -94,56 +74,17 @@ class QuestionBoard {
     selectedOptionElem.classList.add("selected-option");
   }
 
-  /**
-   * Evaluates the user answer and updates the UI accordingly.
-   * @returns (-)
-   */
-  #myEvaluation = () => {
-    if (!this.#hasUserSelectAnOption()) {
-      this.evalMsgElem.innerHTML =
-        "<p>Select an option in order to evaluate your choice!</p>";
-      return;
-    }
-
-    let evalMsg = "";
-    let resultClass = "";
-    if (this.selectedAnswerIndex == this.answerIndex) {
-      evalMsg = "<p>Correct answer!</p>";
-      resultClass = "correct";
-      this.onCorrectSelection();
-    } else {
-      evalMsg = `<p>Wrong Answer! The correct answer is: ${this.answer}.</p>`;
-      resultClass = "wrong";
-      this.onWrongSelection();
-    }
-    this.evalMsgElem.innerHTML = evalMsg;
-    this.#enableNextButton();
-    this.#disableEvalButton();
-    const selectedOptionElem = this.#getOptionElem(this.selectedAnswerIndex);
+	/**
+	 * 
+	 * Styling the selected option depending if its correct or not
+	 * 
+	 * @param {number} selectedAnswerIndex, the selectedAnswerIndex of the final given answer by the user
+	 * @param {boolean} isCorrectAnswer, indicates if the selected answer is correct or wrong
+	 */
+  styleSelectedEvaluatedOption(selectedAnswerIndex, isCorrectAnswer) {
+    let resultClass = isCorrectAnswer ? "correct" : "wrong";
+    const selectedOptionElem = this.#getOptionElem(selectedAnswerIndex);
     selectedOptionElem.classList.add(resultClass);
-  };
-
-  /**
-   *
-   * @returns true if the user has select an option, else false
-   */
-  #hasUserSelectAnOption() {
-    return this.selectedAnswerIndex != NO_OPTION_SELECTED;
-  }
-
-  #enableNextButton() {
-    this.nextQuestionBtnElem.disabled = false;
-    this.nextQuestionBtnElem.classList.remove("disabled-button");
-  }
-
-  #disableEvalButton() {
-    this.evalBtnElem.disabled = true;
-    this.evalBtnElem.classList.add("disabled-button");
-  }
-
-  #enableEvalButton() {
-    this.evalBtnElem.disabled = false;
-    this.evalBtnElem.classList.remove("disabled-button");
   }
 }
 

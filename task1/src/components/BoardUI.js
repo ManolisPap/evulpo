@@ -1,6 +1,9 @@
 import Question from "../Question.js";
 import QuestionBoard from "./QuestionUI.js";
 
+const NO_OPTION_SELECTED = -1;
+const DISABLED_BUTTON_CSS = "disabled-button";
+
 class Board {
   /**
    *
@@ -18,8 +21,12 @@ class Board {
       "questions-numbering-container"
     );
     this.scoreContainerElem = document.getElementById("score-container");
+    this.evalBtnElem = document.getElementById("evaluation-button");
     this.nextQuestionBtnElem = document.getElementById("next-question-button");
     this.evalMsgElem = document.getElementById("evaluation-message");
+
+    // specific for each question. need to re-initialize it on each question.
+    this.selectedAnswerIndex = null;
   }
 
   render() {
@@ -27,6 +34,7 @@ class Board {
     this.#initQuestionBoard();
     this.#renderCurrentQuestion();
     this.#attachNextButtonHandler();
+    this.evalBtnElem.addEventListener("click", this.#myEvaluation);
   }
 
   /**
@@ -49,25 +57,26 @@ class Board {
   }
 
   /**
-   * Initialize the QuestionBoard and render the first question
+   * Initialize the QuestionBoard
    */
   #initQuestionBoard() {
-    this.questionBoard = new QuestionBoard(
-      () => {
-        this.questionsStatus.push(true);
-        this.score += this.questions[this.currentQuestion].score;
-        this.scoreContainerElem.innerHTML = `Score: ${this.score}`;
-      },
-      () => {
-        this.questionsStatus.push(false);
-      }
-    );
+    this.questionBoard = new QuestionBoard((selectedAnswerIndex) => {
+      this.selectedAnswerIndex = selectedAnswerIndex;
+    });
   }
 
   /**
    * Renders the current question
    */
   #renderCurrentQuestion() {
+    this.selectedAnswerIndex = NO_OPTION_SELECTED;
+
+    this.evalMsgElem.innerHTML =
+      "<p>Select an option and evaluate your answer!!<p>";
+
+    this.#enableEvalButton();
+    this.#disableNextButton();
+
     const question = this.questions[this.currentQuestion];
     this.questionBoard.renderQuestion(question);
   }
@@ -77,8 +86,6 @@ class Board {
    */
   #attachNextButtonHandler() {
     this.nextQuestionBtnElem.addEventListener("click", () => {
-      this.#disableNextButton();
-
       if (this.#hasMoreQuestions()) {
         this.currentQuestion++;
         this.#renderCurrentQuestion();
@@ -90,13 +97,69 @@ class Board {
     });
   }
 
-  #disableNextButton() {
-    this.nextQuestionBtnElem.disabled = true;
-    this.nextQuestionBtnElem.classList.add("disabled-button");
-  }
-
   #hasMoreQuestions() {
     return this.currentQuestion < this.questions.length - 1;
+  }
+
+  #enableNextButton() {
+    this.nextQuestionBtnElem.disabled = false;
+    this.nextQuestionBtnElem.classList.remove(DISABLED_BUTTON_CSS);
+  }
+
+  #disableNextButton() {
+    this.nextQuestionBtnElem.disabled = true;
+    this.nextQuestionBtnElem.classList.add(DISABLED_BUTTON_CSS);
+  }
+
+  #disableEvalButton() {
+    this.evalBtnElem.disabled = true;
+    this.evalBtnElem.classList.add(DISABLED_BUTTON_CSS);
+  }
+
+  #enableEvalButton() {
+    this.evalBtnElem.disabled = false;
+    this.evalBtnElem.classList.remove(DISABLED_BUTTON_CSS);
+  }
+
+  /**
+   * Evaluates the user answer and updates the UI accordingly.
+   * @returns (-)
+   */
+  #myEvaluation = () => {
+    if (!this.#hasUserSelectAnOption()) {
+      this.evalMsgElem.innerHTML =
+        "<p>Select an option in order to evaluate your choice!</p>";
+      return;
+    }
+
+    const { answerIndex, score, answerOptions } =
+      this.questions[this.currentQuestion];
+    let evalMsg = "";
+    let isCorrectOption = this.selectedAnswerIndex == answerIndex;
+    if (isCorrectOption) {
+      evalMsg = "<p>Correct answer!</p>";
+      this.score += score;
+      this.scoreContainerElem.innerHTML = `Score: ${this.score}`;
+    } else {
+      const answer = answerOptions[answerIndex];
+      evalMsg = `<p>Wrong Answer! The correct answer is: ${answer}.</p>`;
+    }
+    this.questionsStatus.push(isCorrectOption);
+    this.evalMsgElem.innerHTML = evalMsg;
+    this.#disableEvalButton();
+    this.#enableNextButton();
+    this.questionBoard.styleSelectedEvaluatedOption(
+      this.selectedAnswerIndex,
+      isCorrectOption
+    );
+  };
+
+  /**
+   *
+   * @returns true if the user has select an option, else false
+   */
+  #hasUserSelectAnOption() {
+    return this.selectedAnswerIndex != NO_OPTION_SELECTED;
   }
 }
 
