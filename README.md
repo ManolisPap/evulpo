@@ -10,6 +10,18 @@ Then you can visit the basic webpage into your browser under the following addre
 
 Below is some screenshots from the carousel:
 
+User need to select an option and click the `Evaluate Answer` button.
+
 ![](my-images/Screenshot_1.png)
+
+---
+
+Evaluation marks the selected option with green or red color depending if the user made the correct selection and allows to the user to proceed to the next question with the `Next Question` button. The score update accordingly.
+
 ![](my-images/Screenshot_2.png)
+
+---
+
 ![](my-images/Screenshot_3.png)
+
+---
