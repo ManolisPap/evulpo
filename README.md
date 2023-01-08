@@ -78,7 +78,7 @@ npm -v
 
 I created a `DeepL` account and i have chosen the Developer Plan in order to take a free API key with monthly limit of 500.000 character for translation. And thats why i demonstrate my execution with a small subset of rows and not all.
 
-Into `task2/config.js` are the credentials for the DeepL API Key and the database connectivity. You can use the same DeepL API key, but you need to provide your own database credentials.
+Into `task2/config.js` are the credentials for the DeepL API Key and the database connectivity. You can use the same DeepL API key, but you need to provide your own database credentials. Its a bad practice to commit such credentials, but i did it for convenient and there is no risk of charges or any other serious security reason.
 
 ![](my-images/Screenshot_6.png)
 
