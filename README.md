@@ -1,6 +1,6 @@
-# Solutions for evulpo assessment
+# Solution for evulpo assessment
 
-I have create two folders `task1` and `task2`, and its of them contains the solution of each Task.
+I have create two folders `task1` and `task2`, and each of them contains the solution of each task respectively.
 
 ## Task 1
 
