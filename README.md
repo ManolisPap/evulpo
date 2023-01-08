@@ -10,6 +10,8 @@ Then you can visit the basic webpage into your browser under the following addre
 
 Below is some screenshots from the carousel:
 
+---
+
 User need to select an option and click the `Evaluate Answer` button.
 
 ![](my-images/Screenshot_1.png)
@@ -22,6 +24,14 @@ Evaluation marks the selected option with green or red color depending if the us
 
 ---
 
+User has proceed to the 5th question and has answer wrong the question.
+
 ![](my-images/Screenshot_3.png)
+
+---
+
+End of the quiz game.
+
+![](my-images/Screenshot_4.png)
 
 ---
